@@ -82,14 +82,14 @@ qplot(vector_ratings) +
   ggtitle("Distribution of the ratings")
 
 
-# 每个user评了几部电影
+# each user has rated how many movies
 User_summary <- rating_features %>% group_by(userId) %>% summarise(User_viewN = n())
 User_summary_sub <- filter(User_summary, User_viewN <= 500)
 ggplot(User_summary, aes(x = User_viewN)) + geom_histogram() + ggtitle("User Summary")
 ggplot(User_summary_sub, aes(x = User_viewN)) + geom_histogram() + ggtitle("User Summary Sub")
 table(User_summary$User_viewN <= 30)
  
-# 每个电影被几个user评价
+# each movie has been rated for how many times
 Movie_summary <- rating_features %>% group_by(movieId) %>% summarise(Movie_viewedN = n())
 ggplot(Movie_summary, aes(x = Movie_viewedN)) + geom_histogram() + ggtitle("Movie Summary")
 ggplot(filter(Movie_summary, Movie_viewedN <= 50), aes(x = Movie_viewedN)) + geom_histogram() + ggtitle("Movie Summary")
@@ -99,7 +99,7 @@ table(Movie_summary$Movie_viewedN <= 20)
 
 rating_features_count <- inner_join(rating_features,User_summary, by = c("userId"="userId"))
 rating_features_count <- inner_join(rating_features_count,Movie_summary, by = c("movieId"="movieId"))
-# 删除rating中评价过电影数量小于30个的user 和 被评价过20以内的电影
+# drop a movie if it is rated less than 20 and drop a user if he/she rates less than 30 times
 rating_features_small <- filter(rating_features_count, User_viewN > 30 & Movie_viewedN >20)
 length(unique(rating_features_small$userId)) #1944
 length(unique(rating_features_small$movieId)) #1321
