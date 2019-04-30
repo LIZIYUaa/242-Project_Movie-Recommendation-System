@@ -20,8 +20,8 @@
   3. R code to recommendation movies to users.
   
   
-# Data Source
-Because the raw dataset is too large to upload, we here offer the orignal data source below:
+# Data Sources
+Because the raw datasets are too large to upload, we here offer the orignal data sources below:
 
 - Movies rating data sets and users features data like age, gender etc. from the MovieLens web site
 (https://grouplens.org/datasets/movielens/)
