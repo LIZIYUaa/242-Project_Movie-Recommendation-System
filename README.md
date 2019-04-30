@@ -4,7 +4,7 @@
   1. R code converting json files(genres) into csv files, and then do some exploratory data analytics and data cleaning on movie features.
   
 2-user cluster:
-  1. R code cluster user based on age, gender, occupation, etc.
+  1. R code to cluster user based on age, gender, occupation, etc.
   2. R code to preprocess movie release time.
 
 3-movie keywords:
