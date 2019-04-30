@@ -82,14 +82,14 @@ qplot(vector_ratings) +
   ggtitle("Distribution of the ratings")
 
 
-# each user has rated how many movies
+# 每个user评了几部电影
 User_summary <- rating_features %>% group_by(userId) %>% summarise(User_viewN = n())
 User_summary_sub <- filter(User_summary, User_viewN <= 500)
 ggplot(User_summary, aes(x = User_viewN)) + geom_histogram() + ggtitle("User Summary")
 ggplot(User_summary_sub, aes(x = User_viewN)) + geom_histogram() + ggtitle("User Summary Sub")
 table(User_summary$User_viewN <= 30)
  
-# each movies has been rated for how many times
+# 每个电影被几个user评价
 Movie_summary <- rating_features %>% group_by(movieId) %>% summarise(Movie_viewedN = n())
 ggplot(Movie_summary, aes(x = Movie_viewedN)) + geom_histogram() + ggtitle("Movie Summary")
 ggplot(filter(Movie_summary, Movie_viewedN <= 50), aes(x = Movie_viewedN)) + geom_histogram() + ggtitle("Movie Summary")
@@ -99,8 +99,7 @@ table(Movie_summary$Movie_viewedN <= 20)
 
 rating_features_count <- inner_join(rating_features,User_summary, by = c("userId"="userId"))
 rating_features_count <- inner_join(rating_features_count,Movie_summary, by = c("movieId"="movieId"))
-
-# drop a movie if it is rated less than 20 times and drop a user if he/she rates less than 30 movies
+# 删除rating中评价过电影数量小于30个的user 和 被评价过20以内的电影
 rating_features_small <- filter(rating_features_count, User_viewN > 30 & Movie_viewedN >20)
 length(unique(rating_features_small$userId)) #1944
 length(unique(rating_features_small$movieId)) #1321
@@ -112,7 +111,7 @@ write.csv(rating_features_small,'rating_features_small_5.0.csv')
 1000209/(6040*3900) #****lecture observation ratio = 0.0424609
 
 
-# ～～～～～～～～～～～Movie_User_Keyword 从这里开始run～～～～～～～～～～～～
+# ～～～～～～～～～～～Movie_User_Keyword run from here～～～～～～～～～～～～
 library(softImpute) #CF model
 library(randomForest) # Random Forest
 library(xgboost) #XGboost
@@ -375,7 +374,7 @@ OSR2(xgb.preds, train$rating, test$rating) # 0.2731787(max_depth = 15)  #keyword
 # OSR2(nn.preds, train$rating, test$rating) # 
 
 
-#～～～～～～～～～～cast_crew 从这里开始跑～～～～～～～～～～～～
+#～～～～～～～～～～cast_crew run from here～～～～～～～～～～～～
 cast_crew_user_model = read.csv("cast_crew_user_model.csv") 
 cast_crew_user_model = subset(cast_crew_user_model, select = -c(1))
 cast_crew_user_model$ClusterType <- as.factor(cast_crew_user_model$ClusterType)
@@ -471,7 +470,7 @@ OSR2(test.preds.blend, train$rating, test$rating) # 0.3382424 #0.3397021 #keywor
 library(plyr)
 
 # ～～～Movie User Keyword～～～
-## 获得一个user对1321部电影的dataframe
+## get ratings of one user for 1321 movies
 unique_movie <- sort(unique(rating_features_small$movieId)) 
 # length(unique_movie) #1321
 unique_user <- unique(rating_features_small$userId)
@@ -492,7 +491,7 @@ rec_df <- join(rec_df, user_feature, by = c("userId"),type = "inner")
 rec_df <- rec_df[,c(1:66,167:203,67:166)]
 
 #～～～～～Cast_User ～～～～
-## 获得一个user对1321部电影的dataframe
+## get ratings of one user for 1321 movies
 cast_unique_movie <- unique(cast_crew_user_model$MovieId)
 # length(unique(cast_crew_user_model$movieId)) #1321
 cast_unique_user <- unique(cast_crew_user_model$UserId)
@@ -510,7 +509,7 @@ cast_rec_df$rating <- 0
 cast_rec_df <- join(cast_rec_df, cast_movie_feature, by = c("MovieId"),type = "inner")
 cast_rec_df <- join(cast_rec_df, cast_user_feature, by = c("UserId"),type = "inner")
 
-## 利用blend model进行评分预测
+## using blend model to do prediction
 rec_df_matrix <- subset(rec_df, select = -c(movieId,userId))
 drec_df <- xgb.DMatrix(data = as.matrix(rec_df_matrix[,-1]) , label = as.matrix(rec_df$rating))
 # Get predictions on rec_df 
@@ -529,7 +528,7 @@ rec_df.blending_df <- data.frame(rating = rec_df$rating, cf_preds = rec_df.preds
 rec_df.preds.blend <- predict(blend.mod, newdata = rec_df.blending_df) %>% pmin(5) %>% pmax(0.5)
 
 
-## 推荐预测评分最高的电影
+## get movies with top ratings 
 rec_df$rating <-  rec_df.preds.blend
 cast_rec_df$rating <-  rec_df.preds.blend
 
